@@ -91,6 +91,8 @@ class OrtSession:
             match provider:
                 case "CPUExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested"}
+                case "MIGraphXExecutionProvider":
+                    options = {"device_id": settings.device_id}
                 case "CUDAExecutionProvider" | "ROCMExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "OpenVINOExecutionProvider":

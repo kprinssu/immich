@@ -28,7 +28,7 @@ FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d
 ARG ONNXRUNTIME_VERSION="v1.21.1"
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget git
+RUN apt-get update && apt-get install -y --no-install-recommends wget git nano migraphx migraphx-dev
 RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh && \
     chmod +x cmake-3.31.9-linux-x86_64.sh && \
     mkdir -p /code/cmake-3.31.9-linux-x86_64 && \
@@ -61,6 +61,7 @@ RUN --mount=type=cache,target=/ccache \
     --skip_tests \
     --use_rocm \
     --rocm_home=/opt/rocm \
+    --use_migraphx \
     --use_cache \
     --compile_no_warning_as_error
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
@@ -121,6 +122,14 @@ COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
 FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS prod-rocm
+
+# Install pre-compiled rocBLAS library to add support for older GPUs
+RUN apt update && apt install -y migraphx migraphx-dev wget zstd && apt clean
+RUN cd /tmp && wget https://archlinux.org/packages/extra/x86_64/rocblas/download -O rocblas.tar.zst && \
+    tar --zstd --no-overwrite-dir -xvf rocblas.tar.zst && rm rocblas.tar.zst && \
+    rm -rf /opt/rocm/lib/rocblas/library && \
+    mv ./opt/rocm/lib/rocblas/library/ /opt/rocm/lib/rocblas/library/ && \
+    rm -rf /tmp/opt /tmp/usr
 
 FROM prod-cpu AS prod-armnn
 

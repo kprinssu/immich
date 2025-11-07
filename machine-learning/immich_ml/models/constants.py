@@ -90,6 +90,7 @@ _PADDLE_MODELS = {
 
 SUPPORTED_PROVIDERS = [
     "CUDAExecutionProvider",
+    "MIGraphXExecutionProvider",
     "ROCMExecutionProvider",
     "OpenVINOExecutionProvider",
     "CoreMLExecutionProvider",
